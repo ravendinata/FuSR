@@ -6,15 +6,24 @@ const chalk = require('chalk');
 const figlet = require('figlet');
 
 const options =
-`Options:
+`General Functions:
 1. Onlive
 2. Room Info
+
+Streaming Functions:
 3. Stage User List
-4. Stream URL List`;
+4. Search Stage 
+5. Stream URL List
+6. Giftable Items List
+7. Gift Log
+
+FuSRpedia:
+10. Search Gift`;
 
 
 /* MAIN */
-console.log
+console.info('\n');
+console.info
 (
     chalk.hex('#d049f2')
     (
@@ -23,6 +32,7 @@ console.log
 );
 
 console.info(options);
+console.info("====================");
 var opt = Number(prompt("Choose Function: "));
 
 switch (opt)
@@ -47,7 +57,35 @@ switch (opt)
 
     case 4:
         var room_id = prompt("Room ID: ");
+        var param = prompt("Search name: ");
+        sr.searchStage(room_id, param);
+        break;
+
+    case 5:
+        var room_id = prompt("Room ID: ");
         sr.getStreamUrl(room_id);
+        break;
+
+    case 6:
+        var room_id = prompt("Room ID: ");
+        sr.getGiftable(room_id, false);
+        break;
+
+    case 7:
+        var room_id = prompt("Room ID: ");
+        sr.getGiftLog(room_id);
+        break;
+
+    case 10:
+        var param = prompt("Gift ID or Name (Empty = All): ");
+        sr.searchGift(param);
+        break;
+
+    // 'Secret' Options
+
+    case 486:
+        var room_id = prompt("Room ID: ");
+        sr.getGiftable(room_id, true);
         break;
 
     default:

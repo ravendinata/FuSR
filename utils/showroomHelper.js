@@ -1,5 +1,6 @@
 const chalk = require('chalk');
 const fetch = require('node-fetch');
+const fs = require('fs');
 const clui = require('clui');
 const Spinner = clui.Spinner;
 
@@ -26,7 +27,32 @@ function convertEpochTo24hr(epoch)
     return hh + ':' + mm.substr(-2) + ':' + ss.substr(-2); 
 }
 
-// EXPORTED
+function getGiftInfo(search_param)
+{
+    const dataSource = require('../gift_list.json');
+    const data = dataSource.normal;
+    
+    var id_search = data.filter(function(x)
+    { return x.gift_id === Number(search_param); });
+    
+    var string_search;
+    try
+    {
+        string_search = data.filter(function(x)
+        { return x.gift_name.toLowerCase().includes(search_param.toLowerCase()); });
+    }
+    catch(ex){}
+    
+    var item = id_search.concat(string_search);
+
+    return item;
+}
+
+function getGiftPoint(gift_id) { try { return getGiftInfo(gift_id)[0].point } catch(ex) {}; }
+
+/*
+    EXPORTED
+*/
 
 async function getOnlive(param)
 {
@@ -61,7 +87,13 @@ async function getOnlive(param)
         status.stop();
         const roomCount = result.length;
 
-        console.info("\n=== Streaming Now ===\n")
+        console.info("\n=== Streaming Now ===\n");
+
+        if (roomCount == 0)
+        {
+            console.info(chalk.bgHex('#e05600')("No members are live streaming.\n"));
+            return;
+        }
 
         const rows = [];
         for (let room = 0; room < roomCount; room++)
@@ -113,7 +145,6 @@ async function getRoomInfo(room_id)
             currStreamStart = isLive;
         }
 
-
         var rows = [];
         rows.push({'Property': 'Name', 'Value': json.main_name});
         rows.push({'Property': 'Room Level', 'Value': json.room_level});
@@ -129,6 +160,8 @@ async function getRoomInfo(room_id)
         console.info('\n');
     })
 }
+
+// Stage Related
 
 async function getStageUserList(room_id, n = 13)
 {
@@ -149,14 +182,68 @@ async function getStageUserList(room_id, n = 13)
 
         if (data[0] == null)
         {
-            console.info(chalk.bgRed(`\ERROR! Either ID is invalid or room is not currently streaming! Please check ID or try again later...\n`));
+            console.info(chalk.bgRed(`\nERROR! Either ID is invalid or room is not currently streaming! Please check ID or try again later...\n`));
             return;
         }
 
         var rows = [];
-
         for (let i = 0; i < n && i < 100; i++)
-            rows.push({'Username': data[i].user.name, 'UID': data[i].user.user_id})
+            rows.push({'Username': data[i].user.name, 'UID': data[i].user.user_id});
+
+        console.table(rows);
+    })
+}
+
+async function searchStage(room_id, search_param)
+{
+    if (search_param == '')
+    {
+        console.info(chalk.bgRed(`\nERROR! No search parameter entered!\n`));
+        return;
+    }
+
+    const endpoint = "/live/stage_user_list?room_id=" + room_id;
+
+    console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
+
+    const status = new Spinner(" > Fetching data...");
+    status.start();
+
+    fetch(BASE_API_URL + endpoint, METHOD_GET)
+    .then(res => res.json())
+    .then(json => 
+    {
+        status.stop();
+
+        const data = json.stage_user_list;
+
+        if (data[0] == null)
+        {
+            console.info(chalk.bgRed(`\nERROR! Either ID is invalid or room is not currently streaming! Please check ID or try again later...\n`));
+            return;
+        }
+
+        var id_search = data.filter(function(x)
+        { return x.gift_id === Number(search_param); });
+
+        try
+        {
+            var string_search = data.filter(function(x)
+            { return x.user.name.toLowerCase().includes(search_param.toLowerCase()); });
+        }
+        catch(ex) {}
+
+        var user = id_search.concat(string_search);
+        var rows = [];
+        for (let i = 0; i < user.length; i++)
+        {
+            rows.push
+            ({
+                'Username': user[i].user.name, 
+                'UID': user[i].user.user_id,
+                'Rank': user[i].rank
+            });
+        }
 
         console.table(rows);
     })
@@ -181,18 +268,140 @@ async function getStreamUrl(room_id)
 
         if (data[0] == null)
         {
-            console.info(chalk.bgRed(`\ERROR! Either ID is invalid or room is not currently streaming! Please check ID or try again later...\n`));
+            console.info(chalk.bgRed(`\nERROR! Either ID is invalid or room is not currently streaming! Please check ID or try again later...\n`));
             return;
         }
 
         let urlCount = data.length;
-        var rows = [];
 
+        var rows = [];
         for (let i = 0; i < urlCount; i++)
             rows.push({'Quality': data[i].label + ` [${data[i].quality}/${data[i].type}]`, 'URL': data[i].url})
 
         console.table(rows);
     })
+}
+
+// Gift Related
+
+async function getGiftable(room_id, dump)
+{
+    const endpoint = "/live/gift_list?room_id=" + room_id;
+
+    console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
+
+    const status = new Spinner(" > Fetching data...");
+    status.start();
+
+    fetch(BASE_API_URL + endpoint, METHOD_GET)
+    .then(res => res.json())
+    .then(json => 
+    {
+        status.stop();
+        
+        const data = json.normal;
+
+        if (dump == true)
+        {
+            let odata = JSON.stringify(json, null, 4);
+            fs.writeFileSync('gift_list.json', odata);
+            console.info(chalk.bgBlueBright("\nDumping Done!\n"));
+            return;
+        }
+
+        if (data[0] == null)
+        {
+            console.info(chalk.bgRed(`\nERROR! Either ID is invalid or room is not currently streaming! Please check ID or try again later...\n`));
+            return;
+        }
+
+        let items = data.length;
+        console.info(`\n${items} items giftable in this room\n`);
+
+        var rows = [];
+        for (let i = 0; i < items; i++)
+        {
+            rows.push
+            ({
+                'Gift Name': data[i].gift_name, 
+                'Gift ID': data[i].gift_id,
+                'Image URL': data[i].image,
+                'Point': data[i].point,
+                'Free?': data[i].free
+            });
+        }
+
+        console.table(rows);
+    })
+}
+
+async function getGiftLog(room_id)
+{
+    const endpoint = "/live/gift_log?room_id=" + room_id;
+
+    console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
+
+    const status = new Spinner(" > Fetching data...");
+    status.start();
+
+    fetch(BASE_API_URL + endpoint, METHOD_GET)
+    .then(res => res.json())
+    .then(json => 
+    {
+        status.stop();
+        
+        const data = json.gift_log;
+
+        if (data[0] == null)
+        {
+            console.info(chalk.bgRed(`\nERROR! Either ID is invalid or room is not currently streaming! Please check ID or try again later...\n`));
+            return;
+        }
+
+        let items = data.length;
+        
+        var rows = [];
+        for (let i = 0; i < items; i++)
+        {
+            var gift_name = '';
+            try
+            {
+               gift_name = getGiftInfo(data[i].gift_id)[0].gift_name;
+            }
+            catch(ex) {}
+
+            rows.push
+            ({
+                'Gifter Name': data[i].name, 
+                'Gifter ID': data[i].user_id,
+                'Gift Name': gift_name,
+                'Gift ID': data[i].gift_id,
+                'Time Gifted': convertEpochTo24hr(data[i].created_at),
+                'Quantity': data[i].num,
+                'Total Point': data[i].num * Number(getGiftPoint(data[i].gift_id))
+            });
+        }
+
+        console.table(rows);
+    })
+}
+
+function searchGift(search_param)
+{
+    var items = getGiftInfo(search_param);
+    var rows = [];
+    for (let row = 0; row < items.length; row++)
+    {
+        rows.push
+        ({
+            'Gift Name': items[row].gift_name,
+            'Gift ID': items[row].gift_id,
+            'Point': items[row].point,
+            'Free?': items[row].free
+        });
+    }
+    
+    console.table(rows);
 }
 
 
@@ -205,5 +414,10 @@ module.exports =
     getOnlive, 
     getRoomInfo,
     getStageUserList,
-    getStreamUrl
+    getStreamUrl,
+    getGiftable,
+    getGiftLog,
+
+    searchGift,
+    searchStage,
 }
