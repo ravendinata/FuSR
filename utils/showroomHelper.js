@@ -266,7 +266,7 @@ async function getStreamUrl(room_id)
         
         const data = json.streaming_url_list;
 
-        if (data[0] == null)
+        if (data == null)
         {
             console.info(chalk.bgRed(`\nERROR! Either ID is invalid or room is not currently streaming! Please check ID or try again later...\n`));
             return;
