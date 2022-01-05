@@ -10,6 +10,7 @@ const METHOD_GET = { method: "Get" };
 // API URLs
 const BASE_URL = "https://www.showroom-live.com";
 const BASE_API_URL = "https://www.showroom-live.com/api";
+const BASE_TIMETABLE_API_URL = "https://www.showroom-live.com/api/time_table/time_tables";
 const BASE_ONLIVE_API_URL = "https://www.showroom-live.com/api/live/onlives";
 
 /**
@@ -404,6 +405,46 @@ function searchGift(search_param)
     console.table(rows);
 }
 
+function getTimetable()
+{
+    const status = new Spinner(" > Fetching data...");
+    status.start();
+
+    fetch(BASE_TIMETABLE_API_URL, METHOD_GET)
+    .then(res => res.json())
+    .then((json) =>
+    {
+        var data = json.time_tables;
+        var result = data.filter(function(x)
+        { return x.room_url_key.startsWith("48_"); })
+
+        status.stop();
+        const scheduledCount = result.length;
+
+        console.info("\n=== Scheduled Stream ===\n");
+
+        if (scheduledCount == 0)
+        {
+            console.info(chalk.bgHex('#e05600')("No members scheduled a stream.\n"));
+            return;
+        }
+
+        const rows = [];
+        for (let room = 0; room < scheduledCount; room++)
+        {
+            rows.push
+            ({
+                'Room Name': result[room].main_name,
+                'Room ID': result[room].room_id,
+                'URL': BASE_URL + '/' + result[room].room_url_key
+            });
+        }
+        console.table(rows);
+
+        console.info(`\n> ${scheduledCount} Members Streaming | Success!\n`);
+    })    
+}
+
 
 /** ====================
  * * MODULE EXPORTS * * 
@@ -417,6 +458,7 @@ module.exports =
     getStreamUrl,
     getGiftable,
     getGiftLog,
+    getTimetable,
 
     searchGift,
     searchStage,

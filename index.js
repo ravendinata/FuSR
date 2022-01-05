@@ -9,16 +9,17 @@ const options =
 `General Functions:
 1. Onlive
 2. Room Info
+3. Timetable
 
 Streaming Functions:
-3. Stage User List
-4. Search Stage 
-5. Stream URL List
-6. Giftable Items List
-7. Gift Log
+10. Stage User List
+11. Search Stage 
+12. Stream URL List
+13. Giftable Items List
+14. Gift Log
 
 FuSRpedia:
-10. Search Gift`;
+20. Search Gift`;
 
 
 /* MAIN */
@@ -46,8 +47,12 @@ switch (opt)
         var room_id = prompt("Room ID: ");
         sr.getRoomInfo(room_id);
         break;
-    
+
     case 3:
+        sr.getTimetable();
+        break;
+    
+    case 10:
         var room_id = prompt("Room ID: ");
         var dispNum = prompt("Users to display (0 to n; Default = 13): ");
         if (dispNum < 1)
@@ -55,28 +60,28 @@ switch (opt)
         sr.getStageUserList(room_id, dispNum);
         break;
 
-    case 4:
+    case 11:
         var room_id = prompt("Room ID: ");
         var param = prompt("Search name: ");
         sr.searchStage(room_id, param);
         break;
 
-    case 5:
+    case 12:
         var room_id = prompt("Room ID: ");
         sr.getStreamUrl(room_id);
         break;
 
-    case 6:
+    case 13:
         var room_id = prompt("Room ID: ");
         sr.getGiftable(room_id, false);
         break;
 
-    case 7:
+    case 14:
         var room_id = prompt("Room ID: ");
         sr.getGiftLog(room_id);
         break;
 
-    case 10:
+    case 20:
         var param = prompt("Gift ID or Name (Empty = All): ");
         sr.searchGift(param);
         break;
