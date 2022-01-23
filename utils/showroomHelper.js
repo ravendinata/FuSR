@@ -66,8 +66,8 @@ async function getOnlive(param)
     const status = new Spinner(" > Fetching data...");
     status.start();
 
-    var result = await getAPI(BASE_ONLIVE_API_URL);
-    var data = result.onlives[0].lives;
+    var json = await getAPI(BASE_ONLIVE_API_URL);
+    var data = json.onlives[0].lives;
     
     var r1 = data.filter(function(x)
     { return x.room_url_key.startsWith("akb48_"); })
@@ -93,7 +93,8 @@ async function getOnlive(param)
 
     if (roomCount == 0)
     {
-        console.info(chalk.bgHex('#e05600')("No members are live streaming.\n"));
+        status.stop();
+        console.info(chalk.bgHex('#e05600')("\nNo members are live streaming.\n"));
         return;
     }
 
@@ -393,12 +394,10 @@ async function getTimetable()
 
     const scheduledCount = result.length;
 
-    console.info("\n=== Scheduled Stream ===\n");
-
     if (scheduledCount == 0)
     {
-        console.info(chalk.bgHex('#e05600')("No members scheduled a stream.\n"));
         status.stop();
+        console.info(chalk.bgHex('#e05600')("\nNo members scheduled a stream.\n"));
         return;
     }
 
@@ -415,10 +414,66 @@ async function getTimetable()
     
     status.stop();
 
+    console.info("\n=== Timetable Schedules ===\n");
     console.table(rows);
-    console.info(`\n> ${scheduledCount} Members Streaming | Success!\n`);
+    console.info(`\n> ${scheduledCount} Timetable Schedules | Success!\n`);
 }
 
+async function getScheduled(param)
+{
+    const status = new Spinner(" > Fetching data...");
+    status.start();
+
+    var json = await getAPI(BASE_API_URL + "/live/upcoming?genre_id=102");
+    var data = json.upcomings;
+
+    var r1 = data.filter(function(x)
+    { return x.room_url_key.startsWith("akb48_"); })
+    var r2 = data.filter(function(x)
+    { return x.room_url_key.startsWith("48_"); })
+
+    var result = r1.concat(r2);
+
+    if (param != undefined)
+    {
+        var q1 = result.filter(function(x)
+        { return x.room_url_key.toLowerCase().includes(param); })
+
+        var q2 = result.filter(function(x)
+        { return x.main_name.toLowerCase().includes(param); })
+
+        result = q1.concat(q2);
+        var set = new Set(result);
+        result = Array.from(set);
+    }
+
+    const roomCount = result.length;
+
+    if (roomCount == 0)
+    {
+        status.stop();
+        console.info(chalk.bgHex('#e05600')("\nNo members scheduled a live stream.\n"));
+        return;
+    }
+
+    const rows = [];
+    for (let room = 0; room < roomCount; room++)
+    {
+        rows.push
+        ({
+            'Room Name': result[room].main_name,
+            'Room ID': result[room].room_id,
+            'Next Live': convertEpochTo24hr(result[room].next_live_start_at),
+            'URL': BASE_URL + '/' + result[room].room_url_key
+        });
+    }
+    
+    status.stop();
+    
+    console.info("\n=== Scheduled Streams ===\n");
+    console.table(rows);
+    console.info(`\n> ${roomCount} Schedulued Streams | Success!\n`);
+}
 
 /** ====================
  * * MODULE EXPORTS * * 
@@ -433,6 +488,7 @@ module.exports =
     getGiftable,
     getGiftLog,
     getTimetable,
+    getScheduled,
 
     searchGift,
     searchStage,

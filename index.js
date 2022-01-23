@@ -9,7 +9,8 @@ const options =
 `General Functions:
 1. Onlive
 2. Room Info
-3. Timetable
+3. Event Timetable
+4. Scheduled Streams
 
 Streaming Functions:
 10. Stage User List
@@ -50,6 +51,11 @@ switch (opt)
 
     case 3:
         sr.getTimetable();
+        break;
+
+    case 4:
+        var filter = prompt("Enter filter: ");
+        sr.getScheduled(filter);
         break;
     
     case 10:
