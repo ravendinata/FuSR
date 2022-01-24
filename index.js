@@ -118,6 +118,9 @@ console.info
                     console.info("\nOption not found!\n");
                     break;
             }
+
+            if (status == "Running")
+                prompt("Press enter to continue...\n");
         }
     }
 ) ()
