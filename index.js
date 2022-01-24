@@ -60,12 +60,12 @@ console.info
                     break;
 
                 case 3:
-                    sr.getTimetable();
+                    await sr.getTimetable();
                     break;
 
                 case 4:
                     var filter = prompt("Enter filter: ");
-                    sr.getScheduled(filter);
+                    await sr.getScheduled(filter);
                     break;
                 
                 case 10:
@@ -73,40 +73,40 @@ console.info
                     var dispNum = prompt("Users to display (0 to n; Default = 13): ");
                     if (dispNum < 1)
                         dispNum = 13;
-                    sr.getStageUserList(room_id, dispNum);
+                    await sr.getStageUserList(room_id, dispNum);
                     break;
 
                 case 11:
                     var room_id = prompt("Room ID: ");
                     var param = prompt("Search name: ");
-                    sr.searchStage(room_id, param);
+                    await sr.searchStage(room_id, param);
                     break;
 
                 case 12:
                     var room_id = prompt("Room ID: ");
-                    sr.getStreamUrl(room_id);
+                    await sr.getStreamUrl(room_id);
                     break;
 
                 case 13:
                     var room_id = prompt("Room ID: ");
-                    sr.getGiftable(room_id, false);
+                    await sr.getGiftable(room_id, false);
                     break;
 
                 case 14:
                     var room_id = prompt("Room ID: ");
-                    sr.getGiftLog(room_id);
+                    await sr.getGiftLog(room_id);
                     break;
 
                 case 20:
                     var param = prompt("Gift ID or Name (Empty = All): ");
-                    sr.searchGift(param);
+                    await sr.searchGift(param);
                     break;
 
                 // 'Secret' Options
 
                 case 486:
                     var room_id = prompt("Room ID: ");
-                    sr.getGiftable(room_id, true);
+                    await sr.getGiftable(room_id, true);
                     break;
 
                 case 0:
