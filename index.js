@@ -115,7 +115,7 @@ console.info
                     break;
 
                 default:
-                    console.info("\nOption not found! Exitting...\n");
+                    console.info("\nOption not found!\n");
                     break;
             }
         }

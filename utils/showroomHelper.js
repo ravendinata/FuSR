@@ -64,11 +64,13 @@ async function getAPI(url)
 async function getOnlive(param)
 {
     const status = new Spinner(" > Fetching data...");
-    status.start();
-
-    var json = await getAPI(BASE_ONLIVE_API_URL);
-    var data = json.onlives[0].lives;
     
+    status.start();
+    var json = await getAPI(BASE_ONLIVE_API_URL);
+    status.stop()
+
+    var data = json.onlives[0].lives;
+
     var r1 = data.filter(function(x)
     { return x.room_url_key.startsWith("akb48_"); })
     var r2 = data.filter(function(x)
@@ -93,7 +95,6 @@ async function getOnlive(param)
 
     if (roomCount == 0)
     {
-        status.stop();
         console.info(chalk.bgHex('#e05600')("\nNo members are live streaming.\n"));
         return;
     }
@@ -108,9 +109,7 @@ async function getOnlive(param)
             'URL': BASE_URL + '/' + result[room].room_url_key
         });
     }
-    
-    status.stop();
-    
+      
     console.info("\n=== Streaming Now ===\n");
     console.table(rows);
     console.info(`\n> ${roomCount} Members Streaming | Success!\n`);
@@ -118,26 +117,27 @@ async function getOnlive(param)
 
 async function getRoomInfo(room_id)
 {
+    const status = new Spinner(" > Fetching data...");
     const endpoint = "/room/profile?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
-
-    const status = new Spinner(" > Fetching data...");
+    
     status.start();
-
     var json = await getAPI(BASE_API_URL + endpoint);
-
-
-    var isLive;
-    var currStreamStart = convertEpochTo24hr(json.current_live_started_at);
+    status.stop();
 
     console.log(`> Fetch Check: ${json.main_name}`);
 
+    // ROOM DOES NOT EXIST
     if (json.main_name == undefined)
     {
         console.info(chalk.bgRed(`\nCannot find room with id = ${room_id}! Please check ID...\n`));
         return;
     }
+
+    // ROOM FOUND
+    var isLive;
+    var currStreamStart = convertEpochTo24hr(json.current_live_started_at);
 
     if (json.is_onlive == true)
         isLive = "Yes [Online]";
@@ -168,14 +168,15 @@ async function getRoomInfo(room_id)
 
 async function getStageUserList(room_id, n = 13)
 {
+    const status = new Spinner(" > Fetching data...");
     const endpoint = "/live/stage_user_list?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
 
-    const status = new Spinner(" > Fetching data...");
     status.start();
-
     var result = await getAPI(BASE_API_URL + endpoint);
+    status.stop();
+    
     var data = result.stage_user_list;
 
     if (data[0] == null)
@@ -188,7 +189,6 @@ async function getStageUserList(room_id, n = 13)
     for (let i = 0; i < n && i < 100; i++)
         rows.push({'Username': data[i].user.name, 'UID': data[i].user.user_id});
 
-    status.stop();
     console.table(rows);
 }
 
@@ -200,14 +200,15 @@ async function searchStage(room_id, search_param)
         return;
     }
 
+    const status = new Spinner(" > Fetching data...");
     const endpoint = "/live/stage_user_list?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
 
-    const status = new Spinner(" > Fetching data...");
     status.start();
-
     var result= await getAPI(BASE_API_URL + endpoint);
+    status.stop();
+
     var data = result.stage_user_list;
 
     if (data[0] == null)
@@ -216,8 +217,7 @@ async function searchStage(room_id, search_param)
         return;
     }
 
-    var id_search = data.filter(function(x)
-    { return x.gift_id === Number(search_param); });
+    var id_search = data.filter(function(x) { return x.gift_id === Number(search_param); });
 
     try
     {
@@ -228,6 +228,7 @@ async function searchStage(room_id, search_param)
 
     var user = id_search.concat(string_search);
     var rows = [];
+
     for (let i = 0; i < user.length; i++)
     {
         rows.push
@@ -238,20 +239,20 @@ async function searchStage(room_id, search_param)
         });
     }
 
-    status.stop(); 
     console.table(rows);
 }
 
 async function getStreamUrl(room_id)
 {
+    const status = new Spinner(" > Fetching data...");
     const endpoint = "/live/streaming_url?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
 
-    const status = new Spinner(" > Fetching data...");
     status.start();
-
     var result = await getAPI(BASE_API_URL + endpoint);
+    status.stop();
+
     var data = result.streaming_url_list;
 
     if (data == null)
@@ -266,7 +267,6 @@ async function getStreamUrl(room_id)
     for (let i = 0; i < urlCount; i++)
         rows.push({'Quality': data[i].label + ` [${data[i].quality}/${data[i].type}]`, 'URL': data[i].url})
 
-    status.stop();
     console.table(rows);
 }
 
@@ -274,14 +274,15 @@ async function getStreamUrl(room_id)
 
 async function getGiftable(room_id, dump)
 {
+    const status = new Spinner(" > Fetching data...");
     const endpoint = "/live/gift_list?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
 
-    const status = new Spinner(" > Fetching data...");
     status.start();
-
     var json = await getAPI(BASE_API_URL + endpoint);    
+    status.stop();
+
     var data = json.normal;
 
     if (dump == true)
@@ -314,20 +315,20 @@ async function getGiftable(room_id, dump)
         });
     }
 
-    status.stop();
     console.table(rows);
 }
 
 async function getGiftLog(room_id)
 {
+    const status = new Spinner(" > Fetching data...");
     const endpoint = "/live/gift_log?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
 
-    const status = new Spinner(" > Fetching data...");
     status.start();
-    
     var json = await getAPI(BASE_API_URL + endpoint);
+    status.stop();
+    
     const data = json.gift_log;
 
     if (data[0] == null)
@@ -360,13 +361,17 @@ async function getGiftLog(room_id)
         });
     }
 
-    status.stop();
     console.table(rows);
 }
 
 function searchGift(search_param)
 {
+    const status = new Spinner(" > Fetching data...");
+    
+    status.start();
     var items = getGiftInfo(search_param);
+    status.stop();
+    
     var rows = [];
     for (let row = 0; row < items.length; row++)
     {
@@ -382,12 +387,16 @@ function searchGift(search_param)
     console.table(rows);
 }
 
+// Timetable Related
+
 async function getTimetable()
 {
     const status = new Spinner(" > Fetching data...");
+    
     status.start();
-
     var json = await getAPI(BASE_TIMETABLE_API_URL);
+    status.stop();
+    
     var data = json.time_tables;
     var result = data.filter(function(x)
     { return x.room_url_key.startsWith("48_"); })
@@ -412,8 +421,6 @@ async function getTimetable()
         });
     }
     
-    status.stop();
-
     console.info("\n=== Timetable Schedules ===\n");
     console.table(rows);
     console.info(`\n> ${scheduledCount} Timetable Schedules | Success!\n`);
@@ -422,9 +429,11 @@ async function getTimetable()
 async function getScheduled(param)
 {
     const status = new Spinner(" > Fetching data...");
+    
     status.start();
-
     var json = await getAPI(BASE_API_URL + "/live/upcoming?genre_id=102");
+    status.stop();
+    
     var data = json.upcomings;
 
     var r1 = data.filter(function(x)
@@ -467,8 +476,6 @@ async function getScheduled(param)
             'URL': BASE_URL + '/' + result[room].room_url_key
         });
     }
-    
-    status.stop();
     
     console.info("\n=== Scheduled Streams ===\n");
     console.table(rows);
