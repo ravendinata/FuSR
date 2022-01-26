@@ -13,7 +13,7 @@ const options =
 4. Scheduled Streams
 
 Streaming Functions:
-10. Stage User List
+10. Live Ranking
 11. Search Stage 
 12. Stream URL List
 13. Giftable Items List
@@ -22,23 +22,28 @@ Streaming Functions:
 FuSRpedia:
 20. Search Gift
 
-Utilities:
-0. Exit`;
+Enter '99' to CLEAR the screen.
+Enter '0', nothing (blank), or simply Ctrl + C to EXIT.`;
 
+function printLogo()
+{
+    console.info
+    (
+        chalk.hex('#d049f2')
+        (
+            figlet.textSync("FuSR", { horizontalLayout: 'full', font: 'ANSI Shadow'})
+        )
+    );
+}
 
 /* MAIN */
 console.info('\n');
-console.info
-(
-    chalk.hex('#d049f2')
-    (
-        figlet.textSync("FuSR", { horizontalLayout: 'full', font: 'ANSI Shadow'})
-    )
-);
+printLogo();
 
 (async () => 
     {
         var status = "Running";
+        var skip = false;
 
         while(status == "Running")
         {
@@ -69,11 +74,11 @@ console.info
                     break;
                 
                 case 10:
-                    var room_id = prompt("Room ID: ");
+                    var room_id = prompt("Room ID or URL Key: ");
                     var dispNum = prompt("Users to display (0 to n; Default = 13): ");
                     if (dispNum < 1)
                         dispNum = 13;
-                    await sr.getStageUserList(room_id, dispNum);
+                    await sr.getLiveRanking(room_id, dispNum);
                     break;
 
                 case 11:
@@ -114,13 +119,26 @@ console.info
                     console.info("\nExitting...\n");
                     break;
 
+                case 99:
+                    skip = true;
+                    console.clear();
+                    console.info(chalk.bgBlueBright(chalk.whiteBright("\nConsole cleared!\n")));
+                    printLogo();
+                    break;
+
                 default:
+                    skip = true;
                     console.info("\nOption not found!\n");
                     break;
             }
 
             if (status == "Running")
-                prompt("Press enter to continue...\n");
+            {   
+                if (!skip)
+                    prompt("Press enter to continue...\n");
+
+                skip = false;
+            }
         }
     }
 ) ()
