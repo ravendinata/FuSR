@@ -9,10 +9,12 @@
   "author": "Raven Limadinata",
   "license": "ISC",
   "dependencies": {
+    "canvas": "^2.9.0",
     "chalk": "^4.1.2",
     "cli-table": "^0.3.9",
     "clui": "^0.3.6",
     "figlet": "^1.5.2",
+    "jsdom": "^19.0.0",
     "node-fetch": "^2.6.6",
     "opn": "^6.0.0",
     "prompt-sync": "^4.2.0"

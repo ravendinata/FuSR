@@ -3,6 +3,7 @@ const fetch = require('node-fetch');
 const fs = require('fs');
 const clui = require('clui');
 const Spinner = clui.Spinner;
+const { JSDOM } = require("jsdom");
 
 // node-fetch option flags
 const METHOD_GET = { method: "Get" };
@@ -55,6 +56,12 @@ async function getAPI(url)
 {
     const response = await fetch(url, METHOD_GET);
     return await response.json();
+}
+
+async function roomIDtoURLKey(room_id)
+{
+    const result = await getAPI(`https://www.showroom-live.com/api/room/profile?room_id=${room_id}`);
+    return await result.room_url_key;
 }
 
 /*
@@ -190,6 +197,55 @@ async function getStageUserList(room_id, n = 13)
         rows.push({'Username': data[i].user.name, 'UID': data[i].user.user_id});
 
     console.table(rows);
+}
+
+async function getLiveRanking(url_key, n = 13, dump = false)
+{
+    const status = new Spinner(" > Fetching data...");
+    var key = url_key;
+
+    if (!isNaN(url_key))
+        key = await roomIDtoURLKey(url_key);
+
+    console.info(`\n=== DEBUG @ API Fetch ===\n> URL Key: ${key}`);
+
+    status.start();
+    const dom = await JSDOM.fromURL(`https://www.showroom-live.com/${key}`, { resources:"usable", runScripts: "dangerously" })
+    const node = dom.window.document.getElementById('js-live-data');
+    const json = JSON.parse(node.getAttribute("data-json"));
+    const ranking = json.ranking.live_ranking;
+    dom.window.close();
+    status.stop();
+
+    if (ranking[0] == null)
+    {
+        console.info(chalk.bgRed(`\nERROR! Either ID is invalid or room is not currently streaming! Please check ID or try again later...\n`));
+        return;
+    }
+
+    const rows = [];
+    for (let rank = 0; rank < n && rank < ranking.length; rank++)
+    {
+        rows.push
+        ({
+            // 'Ranking': ranking[rank].order_no,
+            'Username': ranking[rank].user.name,
+            'UID': ranking[rank].user.user_id,
+            'Point': ranking[rank].point
+        })
+    }
+
+    let updateTime = convertEpochTo24hr(ranking[0].updated_at);
+    
+    console.info(`\n=== Live Ranking as of ${updateTime} ===`);
+    console.table(rows);
+
+    if (dump == true)
+    {
+        let odata = JSON.stringify(ranking, null, 4);
+        fs.writeFileSync('live_ranking.json', odata);
+        console.info(chalk.bgBlueBright("\nDumping Done!\n"));
+    }
 }
 
 async function searchStage(room_id, search_param)
@@ -491,6 +547,7 @@ module.exports =
     getOnlive, 
     getRoomInfo,
     getStageUserList,
+    getLiveRanking,
     getStreamUrl,
     getGiftable,
     getGiftLog,
