@@ -210,7 +210,19 @@ async function getLiveRanking(url_key, n = 13, dump = false)
     console.info(`\n=== DEBUG @ API Fetch ===\n> URL Key: ${key}`);
 
     status.start();
-    const dom = await JSDOM.fromURL(`https://www.showroom-live.com/${key}`, { resources:"usable", runScripts: "dangerously" })
+    var dom;
+    try 
+    {
+        dom = await JSDOM.fromURL(`https://www.showroom-live.com/${key}`, 
+                                  { resources:"usable", runScripts: "dangerously" })
+    } 
+    catch(ex) 
+    {
+        status.stop();
+        console.info(chalk.bgRed(`\nERROR! Cannot find room! Please check room ID/URL key...\n`));
+        return;
+    }
+
     const node = dom.window.document.getElementById('js-live-data');
     const json = JSON.parse(node.getAttribute("data-json"));
     const ranking = json.ranking.live_ranking;
@@ -219,7 +231,7 @@ async function getLiveRanking(url_key, n = 13, dump = false)
 
     if (ranking[0] == null)
     {
-        console.info(chalk.bgRed(`\nERROR! Either ID is invalid or room is not currently streaming! Please check ID or try again later...\n`));
+        console.info(chalk.bgRed(`\nERROR! Room is not currently streaming! Please try again later...\n`));
         return;
     }
 
