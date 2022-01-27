@@ -371,7 +371,7 @@ async function getGiftable(room_id, dump)
 
     if (data[0] == null)
     {
-        console.info(chalk.bgRed(`\nERROR! Either ID is invalid or room is not currently streaming! Please check ID or try again later...\n`));
+        console.info(chalk.bgRed(`\nERROR! ID is invalid! Please check ID...\n`));
         return;
     }
 

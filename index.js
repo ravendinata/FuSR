@@ -8,16 +8,16 @@ const figlet = require('figlet');
 const options =
 `General Functions:
 1. Onlive
-2. Room Info
-3. Event Timetable
-4. Scheduled Streams
+2. Event Timetable
+3. Scheduled Streams
+4. Room Info
+5. Giftable Items List
 
 Streaming Functions:
 10. Live Ranking
 11. Search Stage 
 12. Stream URL List
-13. Giftable Items List
-14. Gift Log
+13. Gift Log
 
 FuSRpedia & Utilities:
 20. Search Gift
@@ -63,18 +63,23 @@ printLogo();
                     await sr.getOnlive(filter);
                     break;
                 
-                case 2: 
+                case 2:
+                    await sr.getTimetable();
+                    break;
+                
+                case 3:
+                    var filter = prompt("Enter filter: ");
+                    await sr.getScheduled(filter);
+                    break;
+
+                case 4: 
                     var room_id = prompt("Room ID: ");
                     await sr.getRoomInfo(room_id);
                     break;
 
-                case 3:
-                    await sr.getTimetable();
-                    break;
-
-                case 4:
-                    var filter = prompt("Enter filter: ");
-                    await sr.getScheduled(filter);
+                case 5:
+                    var room_id = prompt("Room ID: ");
+                    await sr.getGiftable(room_id, false);
                     break;
 
                 // Streaming Functions
@@ -98,11 +103,6 @@ printLogo();
                     break;
 
                 case 13:
-                    var room_id = prompt("Room ID: ");
-                    await sr.getGiftable(room_id, false);
-                    break;
-
-                case 14:
                     var room_id = prompt("Room ID: ");
                     await sr.getGiftLog(room_id);
                     break;
