@@ -19,8 +19,10 @@ Streaming Functions:
 13. Giftable Items List
 14. Gift Log
 
-FuSRpedia:
+FuSRpedia & Utilities:
 20. Search Gift
+21. Convert Room ID to URL Key
+22. Convert URL Key to Room ID
 
 Enter '99' to CLEAR the screen.
 Enter '0', nothing (blank), or simply Ctrl + C to EXIT.`;
@@ -37,7 +39,8 @@ function printLogo()
 }
 
 /* MAIN */
-console.info('\n');
+console.clear();
+console.info('\nNOTE: This utility is best used in maximized window.\n');
 printLogo();
 
 (async () => 
@@ -54,6 +57,7 @@ printLogo();
 
             switch (opt)
             {
+                // General Functions
                 case 1:
                     var filter = prompt("Enter filter: ");
                     await sr.getOnlive(filter);
@@ -72,7 +76,8 @@ printLogo();
                     var filter = prompt("Enter filter: ");
                     await sr.getScheduled(filter);
                     break;
-                
+
+                // Streaming Functions
                 case 10:
                     var room_id = prompt("Room ID or URL Key: ");
                     var dispNum = prompt("Users to display (0 to n; Default = 13): ");
@@ -102,13 +107,25 @@ printLogo();
                     await sr.getGiftLog(room_id);
                     break;
 
+                // FuSRPedia
                 case 20:
                     var param = prompt("Gift ID or Name (Empty = All): ");
                     await sr.searchGift(param);
                     break;
 
-                // 'Secret' Options
+                case 21:
+                    var param = prompt("Enter Room ID: ")
+                    var res = await sr.roomIDtoURLKey(param);
+                    console.info(`Room ID -> URL Key: ${res}`);
+                    break;
 
+                case 22:
+                    var param = prompt("Enter URL Key: ")
+                    var res = await sr.urlKeyToRoomID(param);
+                    console.info(`URL Key -> Room ID: ${res}`);
+                    break;
+
+                // 'Secret' Options
                 case 486:
                     var room_id = prompt("Room ID: ");
                     await sr.getGiftable(room_id, true);

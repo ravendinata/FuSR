@@ -14,6 +14,7 @@ const BASE_API_URL = "https://www.showroom-live.com/api";
 const BASE_TIMETABLE_API_URL = "https://www.showroom-live.com/api/time_table/time_tables";
 const BASE_ONLIVE_API_URL = "https://www.showroom-live.com/api/live/onlives";
 
+// CONVERTERS
 /**
  * Converts epoch (UNIX) time into formatted 24-hour time
  * @param epoch Epoch time to be converted
@@ -29,6 +30,19 @@ function convertEpochTo24hr(epoch)
     return hh + ':' + mm.substr(-2) + ':' + ss.substr(-2); 
 }
 
+async function roomIDtoURLKey(room_id)
+{
+    const result = await getAPI(`https://www.showroom-live.com/api/room/profile?room_id=${room_id}`);
+    return await result.room_url_key;
+}
+
+async function urlKeyToRoomID(url_key)
+{
+    const result = await getAPI(`https://www.showroom-live.com/api/room/status?room_url_key=${url_key}`);
+    return await result.room_id;
+}
+
+// GETTER
 function getGiftInfo(search_param)
 {
     const dataSource = require('../gift_list.json');
@@ -56,12 +70,6 @@ async function getAPI(url)
 {
     const response = await fetch(url, METHOD_GET);
     return await response.json();
-}
-
-async function roomIDtoURLKey(room_id)
-{
-    const result = await getAPI(`https://www.showroom-live.com/api/room/profile?room_id=${room_id}`);
-    return await result.room_url_key;
 }
 
 /*
@@ -568,4 +576,7 @@ module.exports =
 
     searchGift,
     searchStage,
+
+    roomIDtoURLKey,
+    urlKeyToRoomID,
 }
