@@ -133,7 +133,7 @@ printLogo();
 
                 case 4810:
                     var room_key = prompt("Room ID or URL Key: ");
-                    await sr.getLiveRanking(room_key, 100);
+                    await sr.getLiveRanking(room_key, 100, true);
                     break;
 
                 case 0:
