@@ -42,6 +42,23 @@ async function urlKeyToRoomID(url_key)
     return await result.room_id;
 }
 
+// UTILITIES
+async function retrieveURL(param)
+{
+    if (!isNaN(param))
+        return await roomIDtoURLKey(param);
+
+    return param;
+}
+
+async function retrieveID(param)
+{
+    if (isNaN(param))
+        return await urlKeyToRoomID(param);
+
+    return param;
+}
+
 // GETTER
 function getGiftInfo(search_param)
 {
@@ -130,9 +147,11 @@ async function getOnlive(param)
     console.info(`\n> ${roomCount} Members Streaming | Success!\n`);
 }
 
-async function getRoomInfo(room_id)
+async function getRoomInfo(room_key)
 {
     const status = new Spinner(" > Fetching data...");
+
+    const room_id = await retrieveID(room_key);
     const endpoint = "/room/profile?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
@@ -181,9 +200,11 @@ async function getRoomInfo(room_id)
 
 // Stage Related
 
-async function getStageUserList(room_id, n = 13)
+async function getStageUserList(room_key, n = 13)
 {
     const status = new Spinner(" > Fetching data...");
+
+    const room_id = await retrieveID(room_key);
     const endpoint = "/live/stage_user_list?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
@@ -268,7 +289,7 @@ async function getLiveRanking(url_key, n = 13, dump = false)
     }
 }
 
-async function searchStage(room_id, search_param)
+async function searchStage(room_key, search_param)
 {
     if (search_param == '')
     {
@@ -277,6 +298,8 @@ async function searchStage(room_id, search_param)
     }
 
     const status = new Spinner(" > Fetching data...");
+    
+    const room_id = await retrieveID(room_key);
     const endpoint = "/live/stage_user_list?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
@@ -318,9 +341,11 @@ async function searchStage(room_id, search_param)
     console.table(rows);
 }
 
-async function getStreamUrl(room_id)
+async function getStreamUrl(room_key)
 {
     const status = new Spinner(" > Fetching data...");
+
+    const room_id = await retrieveID(room_key);
     const endpoint = "/live/streaming_url?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
@@ -348,9 +373,11 @@ async function getStreamUrl(room_id)
 
 // Gift Related
 
-async function getGiftable(room_id, dump)
+async function getGiftable(room_key, dump)
 {
     const status = new Spinner(" > Fetching data...");
+
+    const room_id = await retrieveID(room_key);
     const endpoint = "/live/gift_list?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);
@@ -394,9 +421,11 @@ async function getGiftable(room_id, dump)
     console.table(rows);
 }
 
-async function getGiftLog(room_id)
+async function getGiftLog(room_key)
 {
     const status = new Spinner(" > Fetching data...");
+
+    const room_id = await retrieveID(room_key);
     const endpoint = "/live/gift_log?room_id=" + room_id;
 
     console.info(`\n=== DEBUG @ API Fetch ===\n> API Endpoint: ${BASE_API_URL + endpoint}`);

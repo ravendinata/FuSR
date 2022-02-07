@@ -73,38 +73,38 @@ printLogo();
                     break;
 
                 case 4: 
-                    var room_id = prompt("Room ID: ");
-                    await sr.getRoomInfo(room_id);
+                    var room_key = prompt("Room ID or URL Key: ");
+                    await sr.getRoomInfo(room_key);
                     break;
 
                 case 5:
-                    var room_id = prompt("Room ID: ");
-                    await sr.getGiftable(room_id, false);
+                    var room_key = prompt("Room ID or URL Key: ");
+                    await sr.getGiftable(room_key, false);
                     break;
 
                 // Streaming Functions
                 case 10:
-                    var room_id = prompt("Room ID or URL Key: ");
+                    var room_key = prompt("Room ID or URL Key: ");
                     var dispNum = prompt("Users to display (0 to n; Default = 13): ");
                     if (dispNum < 1)
                         dispNum = 13;
-                    await sr.getLiveRanking(room_id, dispNum);
+                    await sr.getLiveRanking(room_key, dispNum);
                     break;
 
                 case 11:
-                    var room_id = prompt("Room ID: ");
+                    var room_key = prompt("Room ID or URL Key: ");
                     var param = prompt("Search name: ");
-                    await sr.searchStage(room_id, param);
+                    await sr.searchStage(room_key, param);
                     break;
 
                 case 12:
-                    var room_id = prompt("Room ID: ");
-                    await sr.getStreamUrl(room_id);
+                    var room_key = prompt("Room ID or URL Key: ");
+                    await sr.getStreamUrl(room_key);
                     break;
 
                 case 13:
-                    var room_id = prompt("Room ID: ");
-                    await sr.getGiftLog(room_id);
+                    var room_key = prompt("Room ID or URL Key: ");
+                    await sr.getGiftLog(room_key);
                     break;
 
                 // FuSRPedia
@@ -126,9 +126,14 @@ printLogo();
                     break;
 
                 // 'Secret' Options
-                case 486:
-                    var room_id = prompt("Room ID: ");
-                    await sr.getGiftable(room_id, true);
+                case 485:
+                    var room_key = prompt("Room ID: ");
+                    await sr.getGiftable(room_key, true);
+                    break;
+
+                case 4810:
+                    var room_key = prompt("Room ID or URL Key: ");
+                    await sr.getLiveRanking(room_key, 100);
                     break;
 
                 case 0:
