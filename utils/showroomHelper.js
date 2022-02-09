@@ -1,6 +1,8 @@
+const CONFIG = require('../config.json');
 const chalk = require('chalk');
 const fetch = require('node-fetch');
 const fs = require('fs');
+const util = require('./commonUtils');
 const clui = require('clui');
 const Spinner = clui.Spinner;
 const { JSDOM } = require("jsdom");
@@ -14,22 +16,11 @@ const BASE_API_URL = "https://www.showroom-live.com/api";
 const BASE_TIMETABLE_API_URL = "https://www.showroom-live.com/api/time_table/time_tables";
 const BASE_ONLIVE_API_URL = "https://www.showroom-live.com/api/live/onlives";
 
+// DATE
+let dateObject = new Date();
+let date_today = dateObject.getFullYear() + ("0" + (dateObject.getMonth() + 1)).slice(-2) + ("0" + dateObject.getDate()).slice(-2);
+
 // CONVERTERS
-/**
- * Converts epoch (UNIX) time into formatted 24-hour time
- * @param epoch Epoch time to be converted
- */
-function convertEpochTo24hr(epoch)
-{
-    var date = new Date(epoch * 1000); // Convert epoch to date format
-
-    var hh = date.getHours();
-    var mm = "0" + date.getMinutes();
-    var ss = "0" + date.getSeconds();
-
-    return hh + ':' + mm.substr(-2) + ':' + ss.substr(-2); 
-}
-
 async function roomIDtoURLKey(room_id)
 {
     const result = await getAPI(`https://www.showroom-live.com/api/room/profile?room_id=${room_id}`);
@@ -80,6 +71,7 @@ function getGiftInfo(search_param)
 
     return item;
 }
+
 
 function getGiftPoint(gift_id) { try { return getGiftInfo(gift_id)[0].point } catch(ex) {}; }
 
@@ -171,7 +163,7 @@ async function getRoomInfo(room_key)
 
     // ROOM FOUND
     var isLive;
-    var currStreamStart = convertEpochTo24hr(json.current_live_started_at);
+    var currStreamStart = util.convertEpochTo24hr(json.current_live_started_at);
 
     if (json.is_onlive == true)
         isLive = "Yes [Online]";
@@ -276,16 +268,38 @@ async function getLiveRanking(url_key, n = 13, dump = false)
         })
     }
 
-    let updateTime = convertEpochTo24hr(ranking[0].updated_at);
+    let updateTime = util.convertEpochTo24hr(ranking[0].updated_at);
     
     console.info(`\n=== Live Ranking as of ${updateTime} ===`);
     console.table(rows);
 
     if (dump == true)
     {
-        let odata = JSON.stringify(ranking, null, 4);
-        fs.writeFileSync('live_ranking.json', odata);
-        console.info(chalk.bgBlueBright("\nDumping Done!\n"));
+        try
+        {
+            var room_name;
+            if (key.startsWith("48_"))
+                room_name = key.slice(3);
+            else
+                room_name = key;
+
+            var odata = JSON.stringify(ranking, null, 4);
+            var fname = `${date_today}_${util.convertEpochTo24hr(ranking[0].updated_at, '')}_${room_name}.json`;
+            var fpath;
+
+            if (CONFIG.dumpFolder_separateByRoom)
+                fpath = `${CONFIG.dumpFolder_liveRanking}${room_name}/`;
+            else
+                fpath = CONFIG.dumpFolder_liveRanking;
+
+
+            if (!fs.existsSync(fpath))
+                fs.mkdirSync(fpath);
+
+            fs.writeFileSync(fpath + fname, odata);
+            console.info(chalk.bgBlueBright(`\nDumping Done! File: ${fpath}${fname}\n`));
+        }
+        catch(ex) { console.info(chalk.bgRed(`\nERROR! Cannot dump data!\n\nException:\n${ex}\n`)); }
     }
 }
 
@@ -460,7 +474,7 @@ async function getGiftLog(room_key)
             'Gifter ID': data[i].user_id,
             'Gift Name': gift_name,
             'Gift ID': data[i].gift_id,
-            'Time Gifted': convertEpochTo24hr(data[i].created_at),
+            'Time Gifted': util.convertEpochTo24hr(data[i].created_at),
             'Quantity': data[i].num,
             'Total Point': data[i].num * Number(getGiftPoint(data[i].gift_id))
         });
@@ -511,7 +525,7 @@ async function getTimetable()
     if (scheduledCount == 0)
     {
         status.stop();
-        console.info(chalk.bgHex('#e05600')("\nNo members scheduled a stream.\n"));
+        console.info(chalk.bgHex('#e05600')("\nNo events scheduled in the timetable.\n"));
         return;
     }
 
@@ -577,7 +591,7 @@ async function getScheduled(param)
         ({
             'Room Name': result[room].main_name,
             'Room ID': result[room].room_id,
-            'Next Live': convertEpochTo24hr(result[room].next_live_start_at),
+            'Next Live': util.convertEpochTo24hr(result[room].next_live_start_at),
             'URL': BASE_URL + '/' + result[room].room_url_key
         });
     }

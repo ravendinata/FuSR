@@ -1,5 +1,6 @@
 # Folders
 /node_modules/
+/live_ranking/
 
 # Files
 gift_list.json

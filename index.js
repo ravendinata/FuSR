@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 
+const CONFIG = require('./config.json');
 const prompt = require('prompt-sync')({sigint: true});
-const sr = require('./utils/showroomHelper.js');
 const chalk = require('chalk');
 const figlet = require('figlet');
+
+const sr = require('./utils/showroomHelper.js');
+const df = require('./utils/dumpFileHelper.js');
 
 const options =
 `General Functions:
@@ -23,15 +26,19 @@ FuSRpedia & Utilities:
 20. Search Gift
 21. Convert Room ID to URL Key
 22. Convert URL Key to Room ID
+30. Summarize Live Ranking
 
 Enter '99' to CLEAR the screen.
 Enter '0', nothing (blank), or simply Ctrl + C to EXIT.`;
 
 function printLogo()
 {
+    if (CONFIG.logo_skip)
+        return;
+
     console.info
     (
-        chalk.hex('#d049f2')
+        chalk.hex(CONFIG.logo_colour)
         (
             figlet.textSync("FuSR", { horizontalLayout: 'full', font: 'ANSI Shadow'})
         )
@@ -107,7 +114,7 @@ printLogo();
                     await sr.getGiftLog(room_key);
                     break;
 
-                // FuSRPedia
+                // FuSRPedia and Utilities
                 case 20:
                     var param = prompt("Gift ID or Name (Empty = All): ");
                     await sr.searchGift(param);
@@ -123,6 +130,13 @@ printLogo();
                     var param = prompt("Enter URL Key: ")
                     var res = await sr.urlKeyToRoomID(param);
                     console.info(`URL Key -> Room ID: ${res}`);
+                    break;
+
+                // Dump File Functions
+                case 30:
+                    console.info('\nEnter the path or name of ranking dump file.\nIf using file name, the file should be inside directory specified in the config file.\n');
+                    var path = prompt('File Name or Path: ');
+                    await df.summarizeLiveRanking(path);
                     break;
 
                 // 'Secret' Options
@@ -161,6 +175,9 @@ printLogo();
 
                 skip = false;
             }
+
+            if (CONFIG.setting_autoClearAfterCommand)
+                console.clear();
         }
     }
 ) ()

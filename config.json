@@ -1,0 +1,9 @@
+{
+    "setting_autoClearAfterCommand": true,
+    
+    "logo_colour": "#d049f2",
+    "logo_skip": false,
+
+    "dumpFolder_liveRanking": "Z:/Showroom/live_ranking/",
+    "dumpFolder_separateByRoom": true
+}
