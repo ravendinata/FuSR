@@ -181,6 +181,7 @@ async function getRoomInfo(room_key)
     rows.push({'Property': 'Currently Streaming?', 'Value': isLive});
     rows.push({'Property': 'Current Stream Start Time', 'Value': currStreamStart});
     rows.push({'Property': 'Current Viewer', 'Value': json.view_num});
+    rows.push({'Property': 'Streak', 'Value': json.live_continuous_days + " days"});
 
     status.stop();
 
