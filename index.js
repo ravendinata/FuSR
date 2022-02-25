@@ -57,16 +57,23 @@ function promptRoomHistory()
     if (quickRedo)
         return lastRoomKey;
 
+    if (CONFIG.history_noPrompt)
+        return prompt("Room ID or URL Key: ");
+
     var confirmation = 'n';
                     
     if (lastRoomKey != '')
-        confirmation = prompt(`Do you want to use the last room key [${lastRoomKey}]? (y/n): `);
+        confirmation = prompt(`Do you want to use the last room key [${lastRoomKey}]? (y/n/<new key>): `);
     
     if (confirmation == 'n')
         lastRoomKey = prompt("Room ID or URL Key: ");
-    else if (confirmation == 'y' || confirmation == '') {}
+    else if (confirmation == 'y' || confirmation == '') 
+        console.info(chalk.bgBlueBright(`\nUsing stored key: ${lastRoomKey}`));
     else
-        console.info(chalk.bgRed("Unrecognized response! Using last room key."));
+    {
+        console.info(chalk.bgBlueBright(`\nUsing new key: ${confirmation}`));
+        return confirmation;
+    }
     
     return lastRoomKey;
 }
