@@ -72,7 +72,7 @@ function promptRoomHistory()
     else
     {
         console.info(chalk.bgBlueBright(`\nUsing new key: ${confirmation}`));
-        return confirmation;
+        lastRoomKey = confirmation;
     }
     
     return lastRoomKey;
